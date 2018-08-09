@@ -642,21 +642,8 @@
     self.addressLabel.textColor = [UIColor colorWithWhite:1.000 alpha:1.000];
     self.addressLabel.userInteractionEnabled = NO;
 
-    NSString* frontArrowString = NSLocalizedString(@"►", nil); // create arrow from Unicode char
-    self.forwardButton = [[UIBarButtonItem alloc] initWithTitle:frontArrowString style:UIBarButtonItemStylePlain target:self action:@selector(goForward:)];
-    self.forwardButton.enabled = YES;
-    self.forwardButton.imageInsets = UIEdgeInsetsZero;
-    if (_browserOptions.navigationbuttoncolor != nil) { // Set button color if user sets it in options
-      self.forwardButton.tintColor = [self colorFromHexString:_browserOptions.navigationbuttoncolor];
-    }
-
-    NSString* backArrowString = NSLocalizedString(@"◄", nil); // create arrow from Unicode char
-    self.backButton = [[UIBarButtonItem alloc] initWithTitle:backArrowString style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
-    self.backButton.enabled = YES;
-    self.backButton.imageInsets = UIEdgeInsetsZero;
-    if (_browserOptions.navigationbuttoncolor != nil) { // Set button color if user sets it in options
-      self.backButton.tintColor = [self colorFromHexString:_browserOptions.navigationbuttoncolor];
-    }
+    self.forwardButton = [self buildForwardButton];
+    self.backButton = [self buildBackButton];
 
     // Filter out Navigation Buttons if user requests so
     if (_browserOptions.hidenavigationbuttons) {
@@ -674,6 +661,63 @@
 - (void) setWebViewFrame : (CGRect) frame {
     NSLog(@"Setting the WebView's frame to %@", NSStringFromCGRect(frame));
     [self.webView setFrame:frame];
+}
+
+- (UIBarButtonItem*)buildForwardButton
+{
+    UIImage *forwardArrow = [self drawForwardArrow];
+    UIBarButtonItem *forwardButton = [[UIBarButtonItem alloc] initWithImage:forwardArrow style:UIBarButtonItemStylePlain target:self action:@selector(goForward:)];
+    forwardButton.enabled = YES;
+    forwardButton.imageInsets = UIEdgeInsetsZero;
+    
+    if (_browserOptions.navigationbuttoncolor != nil) { // Set button color if user sets it in options
+      forwardButton.tintColor = [self colorFromHexString:_browserOptions.navigationbuttoncolor];
+    }
+
+    return forwardButton;
+}
+
+- (UIBarButtonItem*)buildBackButton
+{
+    UIImage *backArrow = [self drawBackArrow];
+    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:backArrow style:UIBarButtonItemStylePlain target:self action:@selector(goBack:)];
+    backButton.enabled = YES;
+    backButton.imageInsets = UIEdgeInsetsZero;
+    
+    if (_browserOptions.navigationbuttoncolor != nil) { // Set button color if user sets it in options
+      backButton.tintColor = [self colorFromHexString:_browserOptions.navigationbuttoncolor];
+    }
+
+    return backButton;
+}
+
+- (UIImage*)drawForwardArrow
+{
+    CGSize canvasSize = CGSizeMake(20,20);
+    CGFloat scale = [UIScreen mainScreen].scale;
+
+    canvasSize.width *= scale;
+    canvasSize.height *= scale;
+
+    UIGraphicsBeginImageContextWithOptions(canvasSize, false, 0);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+
+    CGContextBeginPath(context);
+    CGContextMoveToPoint(   context, canvasSize.width * 3.0/10.0, canvasSize.height * 2.8/10.0);
+    CGContextAddLineToPoint(context, canvasSize.width * 5.0/10.0, canvasSize.height * 5.0/10.0);
+    CGContextAddLineToPoint(context, canvasSize.width * 3.0/10.0, canvasSize.height * 7.2/10.0);
+
+    CGContextSetLineWidth(context, (scale > 1.0 ? 0.75 * scale : 1.0));
+    CGContextSetStrokeColorWithColor(context, [UIColor blackColor].CGColor);
+    CGContextStrokePath(context);
+
+    return UIGraphicsGetImageFromCurrentImageContext();
+}
+
+-(UIImage*)drawBackArrow
+{
+    UIImage *forwardArrow = [self drawForwardArrow];
+    return [UIImage imageWithCGImage:forwardArrow.CGImage scale:forwardArrow.scale orientation:UIImageOrientationUpMirrored];
 }
 
 - (void)setCloseButtonTitle:(NSString*)title : (NSString*) colorString
@@ -898,8 +942,8 @@
 }
 
 - (void) rePositionViews {
-    if ([_browserOptions.toolbarposition isEqualToString:kInAppBrowserToolbarBarPositionTop]) {
-        [self.webView setFrame:CGRectMake(self.webView.frame.origin.x, TOOLBAR_HEIGHT, self.webView.frame.size.width, self.webView.frame.size.height)];
+    if ((_browserOptions.toolbar) && ([_browserOptions.toolbarposition isEqualToString:kInAppBrowserToolbarBarPositionTop])) {
+        [self.webView setFrame:CGRectMake(self.webView.frame.origin.x, TOOLBAR_HEIGHT + [self getStatusBarOffset], self.webView.frame.size.width, self.webView.frame.size.height - [self getStatusBarOffset])];
         [self.toolbar setFrame:CGRectMake(self.toolbar.frame.origin.x, [self getStatusBarOffset], self.toolbar.frame.size.width, self.toolbar.frame.size.height)];
     }
 }
