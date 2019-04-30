@@ -72,6 +72,7 @@
 @property (nonatomic, assign) BOOL disallowoverscroll;
 
 + (CDVInAppBrowserOptions*)parseOptions:(NSString*)options;
++ (NSMutableURLRequest*)createRequest:(NSURL*)url headers:(NSString*)headers;
 
 @end
 
@@ -103,7 +104,7 @@
 @property (nonatomic) NSURL* currentURL;
 
 - (void)close;
-- (void)navigateTo:(NSURL*)url;
+- (void)navigateTo:(NSURL*)url headers:(NSString *)headers;
 - (void)showLocationBar:(BOOL)show;
 - (void)showToolBar:(BOOL)show : (NSString *) toolbarPosition;
 - (void)setCloseButtonTitle:(NSString*)title : (NSString*) colorString;

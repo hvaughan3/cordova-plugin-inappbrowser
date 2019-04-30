@@ -84,6 +84,7 @@
     NSString* url = [command argumentAtIndex:0];
     NSString* target = [command argumentAtIndex:1 withDefault:kInAppBrowserTargetSelf];
     NSString* options = [command argumentAtIndex:2 withDefault:@"" andClass:[NSString class]];
+    NSString* headers = [command argumentAtIndex:3 withDefault:@"" andClass:[NSString class]];
 
     self.callbackId = command.callbackId;
 
@@ -100,11 +101,11 @@
         }
 
         if ([target isEqualToString:kInAppBrowserTargetSelf]) {
-            [self openInCordovaWebView:absoluteUrl withOptions:options];
+            [self openInCordovaWebView:absoluteUrl withOptions:options withHeaders:headers];
         } else if ([target isEqualToString:kInAppBrowserTargetSystem]) {
             [self openInSystem:absoluteUrl];
         } else { // _blank or anything else
-            [self openInInAppBrowser:absoluteUrl withOptions:options];
+            [self openInInAppBrowser:absoluteUrl withOptions:options withHeaders:headers];
         }
 
         pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -116,7 +117,7 @@
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
-- (void)openInInAppBrowser:(NSURL*)url withOptions:(NSString*)options
+- (void)openInInAppBrowser:(NSURL*)url withOptions:(NSString*)options withHeaders:(NSString*)headers
 {
     CDVInAppBrowserOptions* browserOptions = [CDVInAppBrowserOptions parseOptions:options];
 
@@ -209,7 +210,7 @@
         self.inAppBrowserViewController.webView.suppressesIncrementalRendering = browserOptions.suppressesincrementalrendering;
     }
 
-    [self.inAppBrowserViewController navigateTo:url];
+    [self.inAppBrowserViewController navigateTo:url headers:headers];
     if (!browserOptions.hidden) {
         [self show:nil];
     }
@@ -279,9 +280,9 @@
     });
 }
 
-- (void)openInCordovaWebView:(NSURL*)url withOptions:(NSString*)options
+- (void)openInCordovaWebView:(NSURL*)url withOptions:(NSString*)options withHeaders:(NSString*)headers
 {
-    NSURLRequest* request = [NSURLRequest requestWithURL:url];
+    NSMutableURLRequest* request = [CDVInAppBrowserOptions createRequest:url headers:headers];
 
 #ifdef __CORDOVA_4_0_0
     // the webview engine itself will filter for this according to <allow-navigation> policy
@@ -291,7 +292,7 @@
     if ([self.commandDelegate URLIsWhitelisted:url]) {
         [self.webView loadRequest:request];
     } else { // this assumes the InAppBrowser can be excepted from the white-list
-        [self openInInAppBrowser:url withOptions:options];
+        [self openInInAppBrowser:url withOptions:options withHeaders:headers];
     }
 #endif
 }
@@ -894,9 +895,9 @@
     });
 }
 
-- (void)navigateTo:(NSURL*)url
+- (void)navigateTo:(NSURL*)url headers:(NSString*)headers
 {
-    NSURLRequest* request = [NSURLRequest requestWithURL:url];
+    NSMutableURLRequest* request = [CDVInAppBrowserOptions createRequest:url headers:headers];
 
     if (_userAgentLockToken != 0) {
         [self.webView loadRequest:request];
@@ -1125,6 +1126,24 @@
     }
 
     return obj;
+}
+
++ (NSMutableURLRequest*)createRequest:(NSURL*)url headers:(NSString*)headers
+{
+    NSMutableURLRequest* request = [NSMutableURLRequest requestWithURL:url];
+	if (headers != nil) {
+		 NSArray* pairs = [headers componentsSeparatedByString:@","];
+		 for (NSString* pair in pairs) {
+			NSArray* keyvalue = [pair componentsSeparatedByString:@"="];
+
+ 			if ([keyvalue count] == 2) {
+				NSString* key = [[[[keyvalue objectAtIndex:0] stringByReplacingOccurrencesOfString:@"@e" withString:@"="] stringByReplacingOccurrencesOfString:@"@c" withString:@","] stringByReplacingOccurrencesOfString:@"@a" withString:@"@"];
+				NSString* value = [[[[keyvalue objectAtIndex:1] stringByReplacingOccurrencesOfString:@"@e" withString:@"="] stringByReplacingOccurrencesOfString:@"@c" withString:@","] stringByReplacingOccurrencesOfString:@"@a" withString:@"@"];
+				[request setValue:value forHTTPHeaderField:key];
+			}
+		}
+	}
+	return request;
 }
 
 @end
