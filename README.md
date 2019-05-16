@@ -159,9 +159,6 @@ instance, or the system browser.
     - __transitionstyle__: Set to `fliphorizontal`, `crossdissolve` or `coververtical` to set the [transition style](http://developer.apple.com/library/ios/#documentation/UIKit/Reference/UIViewController_Class/Reference/Reference.html#//apple_ref/occ/instp/UIViewController/modalTransitionStyle) (defaults to `coververtical`).
     - __toolbarposition__: Set to `top` or `bottom` (default is `bottom`). Causes the toolbar to be at the top or bottom of the window.
     - __hidespinner__: Set to `yes` or `no` to change the visibility of the loading indicator (defaults to `no`).
-    - __headers__: Headers for the http request. Optional. _(String)_ or _(javascript object)_
-        - _(String)_: headers must be in `header=value` form, separated by commas : `header1=value1,header2=value2`. don't use _(String)_ if commas or equals can be contained in headers or values.
-        - _(javascript object)_: headers are stored in object's properties like this `{ 'header1': 'value1', 'header2': 'value2'}`. this storage always works even if headers contain commas or equals.
 
     Windows supports these additional options:
 
@@ -169,6 +166,9 @@ instance, or the system browser.
     - __hardwareback__: works the same way as on Android platform.
     - __fullscreen__: set to `yes` to create the browser control without a border around it. Please note that if __location=no__ is also specified, there will be no control presented to user to close IAB window.
 
+- __headers__: Header key/value pairs to be passed in on initial HTTP request page load (headers are not passed on subsequent link clicks after the initial page load). Optional. _(String)_ or _(javascript object)_
+    - _(String)_: headers must be in `header=value` form, separated by commas : `header1=value1,header2=value2`. don't use _(String)_ if commas or equals can be contained in headers or values.
+    - _(javascript object)_: headers are stored in object's properties like this `{ 'header1': 'value1', 'header2': 'value2'}`. this storage always works even if headers contain commas or equals.
 
 ### Supported Platforms
 
@@ -180,8 +180,8 @@ instance, or the system browser.
 
 ### Example
 
-    var ref = cordova.InAppBrowser.open('http://apache.org', '_blank', 'location=yes');
-    var ref2 = cordova.InAppBrowser.open(encodeURI('http://ja.m.wikipedia.org/wiki/ハングル'), '_blank', 'location=yes');
+    var ref = cordova.InAppBrowser.open('http://apache.org', '_blank', 'location=yes', 'Accept-Language=en-US');
+    var ref2 = cordova.InAppBrowser.open(encodeURI('http://ja.m.wikipedia.org/wiki/ハングル'), '_blank', 'location=yes', { 'Accept-Language': 'en-US' };
 
 ### OSX Quirks
 
