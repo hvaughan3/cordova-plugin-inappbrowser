@@ -33,15 +33,18 @@ import android.graphics.drawable.Drawable;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.net.http.SslError;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
@@ -741,6 +744,27 @@ public class InAppBrowser extends CordovaPlugin {
                 return value;
             }
 
+            private int getDisplayContentHeight() {
+                final WindowManager windowManager = cordova.getActivity().getWindowManager();
+                final Point size = new Point();
+                int screenHeight = 0, actionBarHeight = 0;
+
+                if (cordova.getActivity().getActionBar() != null) {
+                    actionBarHeight = cordova.getActivity().getActionBar().getHeight();
+                }
+
+                int contentTop = ((ViewGroup) cordova.getActivity().findViewById(android.R.id.content)).getTop();
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    windowManager.getDefaultDisplay().getSize(size);
+                    screenHeight = size.y;
+                } else {
+                    Display d = windowManager.getDefaultDisplay();
+                    screenHeight = d.getHeight();
+                }
+                return screenHeight - contentTop - actionBarHeight;
+            }
+
             private View createCloseButton(int id) {
                 View _close;
                 Resources activityRes = cordova.getActivity().getResources();
@@ -813,6 +837,9 @@ public class InAppBrowser extends CordovaPlugin {
 
                 // Toolbar layout
                 RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
+
+                boolean showToolbar = getShowLocationBar();
+                
                 //Please, no more black!
                 toolbar.setBackgroundColor(toolbarColor);
                 toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
@@ -937,16 +964,31 @@ public class InAppBrowser extends CordovaPlugin {
                 View footerClose = createCloseButton(7);
                 footer.addView(footerClose);
 
+                // Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
+                // Point size = new Point();
+                // display.getSize(size);
+                // // int width = size.x;
+                // int height = size.y;
+
+                int webViewHeight = getDisplayContentHeight();
+
+                if (showToolbar) {
+                  webViewHeight = webViewHeight - this.dpToPixels(44);
+                }
+
+                if (showFooter) {
+                  webViewHeight = webViewHeight - footerSize;
+                }
 
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
                 // inAppWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-                LinearLayout.LayoutParams webViewLayoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+                LinearLayout.LayoutParams webViewLayoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, webViewHeight);
 
-                if (showFooter) {
-                  webViewLayoutParams.setMargins(0, 0, 0, footerSize); // Adding margin the same size as the footer
-                }
+                // if (showFooter) {
+                //   webViewLayoutParams.setMargins(0, 0, 0, footerSize); // Adding margin the same size as the footer
+                // }
 
                 inAppWebView.setLayoutParams(webViewLayoutParams);
                 inAppWebView.setId(Integer.valueOf(6));
@@ -1068,7 +1110,7 @@ public class InAppBrowser extends CordovaPlugin {
                 if (!hideUrlBar) toolbar.addView(edittext);
 
                 // Don't add the toolbar if its been disabled
-                if (getShowLocationBar()) {
+                if (showToolbar) {
                     // Add our toolbar to our main view/layout
                     main.addView(toolbar);
                 }
