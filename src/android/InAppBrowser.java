@@ -100,6 +100,7 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String EXIT_EVENT = "exit";
     private static final String LOCATION = "location";
     private static final String ZOOM = "zoom";
+    private static final String SHOWZOOM = "showZoom";
     private static final String HIDDEN = "hidden";
     private static final String LOAD_START_EVENT = "loadstart";
     private static final String LOAD_STOP_EVENT = "loadstop";
@@ -132,6 +133,7 @@ public class InAppBrowser extends CordovaPlugin {
     private CallbackContext callbackContext;
     private boolean showLocationBar = true;
     private boolean showZoomControls = true;
+    private boolean enableZoomControls = true;
     private boolean openWindowHidden = false;
     private boolean clearAllCache = false;
     private boolean clearSessionCache = false;
@@ -640,6 +642,7 @@ public class InAppBrowser extends CordovaPlugin {
     public String showWebPage(final String url, HashMap<String, String> features) {
         // Determine if we should hide the location bar.
         showLocationBar = true;
+        enableZoomControls = true;
         showZoomControls = true;
         openWindowHidden = false;
         mediaPlaybackRequiresUserGesture = false;
@@ -657,7 +660,11 @@ public class InAppBrowser extends CordovaPlugin {
             }
             String zoom = features.get(ZOOM);
             if (zoom != null) {
-                showZoomControls = zoom.equals("yes") ? true : false;
+                enableZoomControls = zoom.equals("yes") ? true : false;
+            }
+            String showZoom = features.get(SHOWZOOM);
+            if (showZoom != null) {
+                showZoomControls = showZoom.equals("yes") ? true : false;
             }
             String hidden = features.get(HIDDEN);
             if (hidden != null) {
@@ -1040,7 +1047,8 @@ public class InAppBrowser extends CordovaPlugin {
                 WebSettings settings = inAppWebView.getSettings();
                 settings.setJavaScriptEnabled(true);
                 settings.setJavaScriptCanOpenWindowsAutomatically(true);
-                settings.setBuiltInZoomControls(showZoomControls);
+                settings.setBuiltInZoomControls(enableZoomControls);
+                settings.setDisplayZoomControls(showZoomControls);
                 settings.setPluginState(android.webkit.WebSettings.PluginState.ON);
 
                 // Add postMessage interface
