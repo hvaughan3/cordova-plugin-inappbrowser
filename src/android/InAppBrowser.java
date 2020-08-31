@@ -846,7 +846,7 @@ public class InAppBrowser extends CordovaPlugin {
                 RelativeLayout toolbar = new RelativeLayout(cordova.getActivity());
 
                 boolean showToolbar = getShowLocationBar();
-                
+
                 //Please, no more black!
                 toolbar.setBackgroundColor(toolbarColor);
                 toolbar.setLayoutParams(new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, this.dpToPixels(44)));
@@ -960,28 +960,26 @@ public class InAppBrowser extends CordovaPlugin {
                 } else {
                     _footerColor = android.graphics.Color.LTGRAY;
                 }
-                footer.setBackgroundColor(_footerColor);                
+                footer.setBackgroundColor(_footerColor);
                 RelativeLayout.LayoutParams footerLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, footerSize);
                 footerLayout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                 footer.setLayoutParams(footerLayout);
-                if (closeButtonCaption != "") footer.setPadding(this.dpToPixels(8), this.dpToPixels(8), this.dpToPixels(8), this.dpToPixels(8));
+                if (closeButtonCaption != "") {
+                  int footerPadding = this.dpToPixels(8);
+                  footer.setPadding(footerPadding, footerPadding, footerPadding, footerPadding);
+                  footerSize = footerSize + (footerPadding * 2); // Double the padding height since it is on top and bottom
+                }
                 footer.setHorizontalGravity(Gravity.LEFT);
                 footer.setVerticalGravity(Gravity.BOTTOM);
 
                 View footerClose = createCloseButton(7);
                 footer.addView(footerClose);
 
-                // Display display = cordova.getActivity().getWindowManager().getDefaultDisplay();
-                // Point size = new Point();
-                // display.getSize(size);
-                // // int width = size.x;
-                // int height = size.y;
-
                 int webViewHeight = getDisplayContentHeight();
 
-                if (showToolbar) {
-                  webViewHeight = webViewHeight - this.dpToPixels(44);
-                }
+                // if (showToolbar) {
+                //   webViewHeight = webViewHeight - this.dpToPixels(44);
+                // }
 
                 if (showFooter) {
                   webViewHeight = webViewHeight - footerSize;
