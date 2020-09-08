@@ -964,11 +964,12 @@ public class InAppBrowser extends CordovaPlugin {
                 RelativeLayout.LayoutParams footerLayout = new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, footerSize);
                 footerLayout.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
                 footer.setLayoutParams(footerLayout);
+
                 if (closeButtonCaption != "") {
                   int footerPadding = this.dpToPixels(8);
                   footer.setPadding(footerPadding, footerPadding, footerPadding, footerPadding);
-                  footerSize = footerSize + (footerPadding * 2); // Double the padding height since it is on top and bottom
                 }
+
                 footer.setHorizontalGravity(Gravity.LEFT);
                 footer.setVerticalGravity(Gravity.BOTTOM);
 
@@ -981,9 +982,9 @@ public class InAppBrowser extends CordovaPlugin {
                 //   webViewHeight = webViewHeight - this.dpToPixels(44);
                 // }
 
-                if (showFooter) {
-                  webViewHeight = webViewHeight - footerSize;
-                }
+                // if (showFooter) {
+                //   webViewHeight = webViewHeight - footerSize;
+                // }
 
                 // WebView
                 inAppWebView = new WebView(cordova.getActivity());
@@ -991,9 +992,9 @@ public class InAppBrowser extends CordovaPlugin {
 
                 LinearLayout.LayoutParams webViewLayoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, webViewHeight);
 
-                // if (showFooter) {
-                //   webViewLayoutParams.setMargins(0, 0, 0, footerSize); // Adding margin the same size as the footer
-                // }
+                if (showFooter) {
+                  webViewLayoutParams.setMargins(0, 0, 0, footerSize); // Adding margin the same size as the footer
+                }
 
                 inAppWebView.setLayoutParams(webViewLayoutParams);
                 inAppWebView.setId(Integer.valueOf(6));
